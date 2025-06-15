@@ -1,0 +1,28 @@
+---
+- name: Upgrade RouterOS and Firmware MikroTik
+  hosts: mikrotik
+  gather_facts: no
+
+  vars_files:
+    - vault/secrets.yml
+
+  tasks:
+
+    - name: Cek update RouterOS
+      ansible.netcommon.cli_command:
+        command: /system package update check-for-updates
+      register: check_upgrade
+
+    - name: Download update RouterOS jika tersedia
+      ansible.netcommon.cli_command:
+        command: /system package update download
+      when: '"New version" in check_upgrade.stdout'
+
+    - name: Upgrade RouterBOOT firmware
+      ansible.netcommon.cli_command:
+        command: /system routerboard upgrade
+
+    - name: (Opsional) Reboot MikroTik jika confirm_reboot=true
+      ansible.netcommon.cli_command:
+        command: /system reboot
+      when: confirm_reboot | default(false)
