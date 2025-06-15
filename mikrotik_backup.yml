@@ -1,0 +1,40 @@
+---
+- name: Backup konfigurasi MikroTik (rsc dan binary)
+  hosts: mikrotik
+  gather_facts: no
+
+  vars_files:
+    - vault/secrets.yml
+
+  tasks:
+
+    - name: Buat folder backup lokal jika belum ada
+      local_action:
+        module: file
+        path: "./backups/{{ inventory_hostname }}"
+        state: directory
+        mode: '0755'
+
+    - name: Buat file backup konfigurasi .rsc di MikroTik
+      ansible.netcommon.cli_command:
+        command: /export file=backup
+
+    - name: Buat file backup konfigurasi .backup (binary)
+      ansible.netcommon.cli_command:
+        command: /system backup save name=backup
+
+    - name: Ambil file backup.rsc dari MikroTik ke lokal
+      ansible.builtin.fetch:
+        src: backup.rsc
+        dest: "./backups/{{ inventory_hostname }}/"
+        flat: yes
+
+    - name: Ambil file backup.backup dari MikroTik ke lokal
+      ansible.builtin.fetch:
+        src: backup.backup
+        dest: "./backups/{{ inventory_hostname }}/"
+        flat: yes
+
+    - name: Hapus file backup dari MikroTik setelah diambil
+      ansible.netcommon.cli_command:
+        command: /file remove backup.rsc,backup.backup

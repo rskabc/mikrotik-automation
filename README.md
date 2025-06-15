@@ -10,6 +10,7 @@ Playbook ini digunakan untuk melakukan otomatisasi skala besar untuk upgrade Rou
 mikrotik-automation/
 ├── inventory                # Daftar IP MikroTik
 ├── mikrotik_upgrade.yml    # Playbook utama
+├── mikrotik_backup.yml    # playbook backup
 ├── group_vars/
 │   └── mikrotik.yml        # Variabel koneksi (user/password)
 └── vault/
@@ -91,7 +92,37 @@ ansible-playbook -i inventory mikrotik_upgrade.yml --vault-password-file ~/.vaul
 
 ---
 
+
+
+## 💾 Backup Konfigurasi MikroTik
+
+Selain upgrade, proyek ini juga menyediakan playbook `mikrotik_backup.yml` untuk melakukan backup konfigurasi MikroTik dalam dua format:
+
+- `backup.rsc` → format teks (hasil dari `/export`)
+- `backup.backup` → format binary (hasil dari `/system backup save`)
+
+### 📂 Struktur Folder Tambahan:
+```
+mikrotik-automation/
+└── backups/
+    ├── 10.0.0.1/
+    │   ├── backup.rsc
+    │   └── backup.backup
+    └── 10.0.0.2/
+        └── ...
+```
+
+### 🚀 Menjalankan Playbook Backup:
+```bash
+ansible-playbook -i inventory mikrotik_backup.yml --vault-password-file ~/.vault_pass.txt
+```
+
+### 🔄 Setelah Backup:
+Secara default, file backup akan dihapus dari perangkat MikroTik setelah berhasil diambil.
+
 ## 👨‍💻 Pembuat
 
 Dibuat oleh [@rskabc](https://github.com/rskabc)  
 Digunakan untuk otomasi internal perangkat jaringan MikroTik.
+---
+---
